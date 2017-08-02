@@ -1,1 +1,1 @@
-# recovery-update
+# recovery-update1.了解如何创建自定义分区2.如何操作分区，包括应用层和uboot中，包括节点形式和挂载形式3.训练rubbish的编程方法和编程思路
