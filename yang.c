@@ -17,7 +17,7 @@ int main(int arc, char **argv)
 	if ( !search_file_in_usb("update.zip", absolutePath) ) {
 		dbgprint("--%s--\n", absolutePath);	
 	}
-	ensure_path_mounted(absolutePath);
+	//ensure_path_mounted(absolutePath);
 
 	return 0;
 }
