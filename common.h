@@ -21,7 +21,7 @@
 #include <stdarg.h>
 #include <string.h>
 #include <stdlib.h>
-#include "roots.h"
+//#include "roots.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -44,6 +44,7 @@ extern "C" {
 #define STRINGIFY(x) #x
 #define EXPAND(x) STRINGIFY(x)
 
+typedef enum{false = 0, true} bool;
 typedef struct fstab_rec Volume;
 
 // fopen a file, mounting volumes and making parent dirs as necessary.
