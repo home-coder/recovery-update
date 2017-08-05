@@ -177,8 +177,6 @@ int search_file_in_usb(const char * file,char * absolutePath){
     return -1;
 }
 
-
-
 int ensure_dev_unmounted(const char * mountedPoint){
     int ret = umount(mountedPoint);
     return ret;
