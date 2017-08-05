@@ -20,6 +20,7 @@ typedef struct _usb_info {
 	char no;
 	char name[32];
 	int speed;
+	char *attr;
 }usb_info;
 
 int main(int arc, char **argv)
@@ -58,28 +59,31 @@ int main(int arc, char **argv)
 #endif
 
 #if TEST_STRUCT
+	int ret = 0;
+	int offset = 32;
+	char *readbuf = NULL, *writebuf = NULL;
+	usb_info *pinfo;
+
 	usb_info thuinfo = {
 		.no = 'A',
 		.name = "this is my usb",
 		.speed = 115200,
+		.attr = "i am a USB-3.0 Device",
 	};
-	int ret = 0;
-	int offset = 32;
-	usb_info *pinfo;
-	char *readbuf = NULL, *writebuf = NULL;
 	usb_info *uinfo = &thuinfo;
 
-	FILE *fp = fopen(USBPATH, "w+");
+	FILE *fp = fopen(USBPATH, "wb+");
 	if (!fp) {
 		fprintf(stderr, "open failed (%s)", strerror(errno));
 		goto fail1;
 	}
-	writebuf = (char *)malloc(sizeof(usb_info));
-	memcpy(writebuf, uinfo, sizeof(usb_info));
-	pinfo = (usb_info *)writebuf;
-	dbgprint("no:%c, name:%s, speed:%d\n", pinfo->no, pinfo->name, pinfo->speed);
 
-	ret = yang_write_block(fp, offset, writebuf);
+	ret = yang_write_block(fp, offset, uinfo, sizeof(usb_info));
+	//如果ret与usb_info的大小不同，说明没有很好的写入，破坏了结构体，最好就放弃
+	if (ret != sizeof(usb_info)) {
+		dbgprint("failed to write over ret = %d\n", ret);
+		goto fail2;
+	}
 	dbgprint("ret = %d\n", ret);
 
 	readbuf = (char *)malloc(ret + 1);
@@ -90,11 +94,13 @@ int main(int arc, char **argv)
 
 	printf("%s\n", readbuf);
 	pinfo = (usb_info *)readbuf;
-	dbgprint("no:%c, name:%s, speed:%d\n", pinfo->no, pinfo->name, pinfo->speed);
+	dbgprint("no:%c, name:%s, speed:%d, attr:%s\n", pinfo->no, pinfo->name, pinfo->speed, pinfo->attr);
 	fclose(fp);
 #endif
 
 	return 0;
+fail2:
+	fclose(fp);
 fail1:
 	exit(-1);
 }
