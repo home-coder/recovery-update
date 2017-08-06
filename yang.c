@@ -20,7 +20,7 @@ typedef struct _usb_info {
 	char no;
 	char name[32];
 	int speed;
-	char *attr;
+	char attr[64];
 }usb_info;
 
 int main(int arc, char **argv)
