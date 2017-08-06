@@ -14,8 +14,8 @@
 #endif
 
 #define USBPATH  "/dev/sdd1"
-#define TEST_STRUCT 1
-
+#define TEST_STRUCT 0
+#define TEST_STR    1
 typedef struct _usb_info {
 	char no;
 	char name[32];
@@ -35,7 +35,7 @@ int main(int arc, char **argv)
 #endif
 
 #if TEST_STR
-	const char *writebuf = "--------------------hello world-------";
+	const char *writebuf = "--------------------hello world-------hello world---hello";
 	int offset = 32;
 	char *readbuf = NULL;
 	int ret = 0;
@@ -45,7 +45,7 @@ int main(int arc, char **argv)
 		fprintf(stderr, "open failed (%s)", strerror(errno));
 		goto fail1;
 	}
-	ret = yang_write_block(fp, offset, writebuf);
+	ret = yang_write_block(fp, offset, writebuf, strlen(writebuf) + 1);
 	dbgprint("ret = %d\n", ret);
 
 	readbuf = (char *)malloc(ret + 1);
@@ -57,7 +57,7 @@ int main(int arc, char **argv)
 	printf("%s\n", readbuf);
 	fclose(fp);
 #endif
-
+	printf("======================================\n");
 #if TEST_STRUCT
 	int ret = 0;
 	int offset = 32;
