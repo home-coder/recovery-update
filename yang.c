@@ -72,6 +72,12 @@ int main(int arc, char **argv)
 	};
 	usb_info *uinfo = &thuinfo;
 
+	ret = wait_for_device(USBPATH);
+	if (ret != 0) {
+		dbgprint("can not get valid device, exit\n");
+		goto fail1;
+	}
+
 	FILE *fp = fopen(USBPATH, "wb+");
 	if (!fp) {
 		fprintf(stderr, "open failed (%s)", strerror(errno));
