@@ -81,7 +81,7 @@ int main(int arc, char **argv)
 	ret = yang_write_block(fp, offset, uinfo, sizeof(usb_info));
 	//如果ret与usb_info的大小不同，说明没有很好的写入，破坏了结构体，最好就放弃
 	if (ret != sizeof(usb_info)) {
-		dbgprint("failed to write over ret = %d\n", ret);
+		dbgprint("failed to write over ret = %d, sizeof(usb_info) = %ld\n", ret, sizeof(usb_info));
 		goto fail2;
 	}
 	dbgprint("ret = %d\n", ret);
@@ -92,7 +92,6 @@ int main(int arc, char **argv)
 	//rewind(fp);
 	yang_read_block(fp, offset, readbuf, ret);
 
-	printf("%s\n", readbuf);
 	pinfo = (usb_info *)readbuf;
 	dbgprint("no:%c, name:%s, speed:%d, attr:%s\n", pinfo->no, pinfo->name, pinfo->speed, pinfo->attr);
 	fclose(fp);

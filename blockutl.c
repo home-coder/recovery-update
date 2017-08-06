@@ -6,7 +6,7 @@ int yang_write_block(FILE *fp, int offset, const void *buffer, int len)
 	int ret = 0;
 
 	fseek(fp, offset, SEEK_SET);
-	ret = fwrite(buffer, len, 1, fp);
+	ret = fwrite(buffer, 1, len, fp);
 	return ret;
 }
 
