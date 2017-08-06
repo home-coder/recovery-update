@@ -4,11 +4,13 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-int wait_for_device(const char* fn) {
+int
+wait_for_device(const char *fn)
+{
 	struct stat statbuf;
 	int ret = 10;
 
-	while(ret --> 0) {
+	while (ret-- > 0) {
 		if (!stat(fn, &statbuf)) {
 			break;
 		}
@@ -21,9 +23,8 @@ int wait_for_device(const char* fn) {
 	return 0;
 }
 
-
-
-int yang_write_block(FILE *fp, int offset, const void *buffer, int len)
+int
+yang_write_block(FILE * fp, int offset, const void *buffer, int len)
 {
 	int ret = 0;
 
@@ -35,10 +36,11 @@ int yang_write_block(FILE *fp, int offset, const void *buffer, int len)
 	return ret;
 }
 
-int yang_read_block(FILE *fp, int offset, void *buffer, int ret)
+int
+yang_read_block(FILE * fp, int offset, void *buffer, int ret)
 {
 	int rret = 0;
-	
+
 	fseek(fp, offset, SEEK_SET);
 	rret = fread(buffer, ret, 1, fp);
 	return rret;

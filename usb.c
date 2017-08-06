@@ -14,32 +14,39 @@
 #define TIME_OUT 6000000
 
 static const char *USB_ROOT = "/usb/";
-struct timeval tpstart,tpend;
+struct timeval tpstart, tpend;
 float timeuse = 0;
 
 #define MOUNT_EXFAT            "/sbin/mount.exfat"
 
-void startTiming(){
+void
+startTiming()
+{
 	gettimeofday(&tpstart, NULL);
 }
 
-void endTimming(){
+void
+endTimming()
+{
 	gettimeofday(&tpend, NULL);
 	timeuse = 1000000 * (tpend.tv_sec - tpstart.tv_sec) +
-		(tpend.tv_usec - tpstart.tv_usec);
+	    (tpend.tv_usec - tpstart.tv_usec);
 	LOGD("spend Time %f\n", timeuse);
 }
 
-int check_file_exists(const char * path){
+int
+check_file_exists(const char *path)
+{
 	int ret = -1;
-	if(path == NULL){
+	if (path == NULL) {
 		return -1;
 	}
 	ret = access(path, F_OK);
 	return ret;
 }
 
-bool isMountpointMounted(const char *mp) 
+bool
+isMountpointMounted(const char *mp)
 {
 	char device[256];
 	char mount_path[256];
@@ -48,12 +55,13 @@ bool isMountpointMounted(const char *mp)
 	char line[1024];
 
 	if (!(fp = fopen("/proc/mounts", "r"))) {
-		fprintf(stderr, "Error opening /proc/mounts (%s)", strerror(errno));
+		fprintf(stderr, "Error opening /proc/mounts (%s)",
+			strerror(errno));
 		return false;
 	}
 
-	while(fgets(line, sizeof(line), fp)) {
-		line[strlen(line)-1] = '\0';
+	while (fgets(line, sizeof (line), fp)) {
+		line[strlen(line) - 1] = '\0';
 		sscanf(line, "%255s %255s %255s\n", device, mount_path, rest);
 		if (!strcmp(mount_path, mp)) {
 			fclose(fp);
@@ -65,21 +73,23 @@ bool isMountpointMounted(const char *mp)
 	return false;
 }
 
-bool isDeviceNodeMounted(const char *mp)
+bool
+isDeviceNodeMounted(const char *mp)
 {
 	char device[256];
 	char mount_path[256];
 	char rest[256];
-	FILE *fp; 
+	FILE *fp;
 	char line[1024];
 
 	if (!(fp = fopen("/proc/mounts", "r"))) {
-		fprintf(stderr, "Error opening /proc/mounts (%s)", strerror(errno));
+		fprintf(stderr, "Error opening /proc/mounts (%s)",
+			strerror(errno));
 		return false;
 	}
 
-	while(fgets(line, sizeof(line), fp)) {
-		line[strlen(line)-1] = '\0';
+	while (fgets(line, sizeof (line), fp)) {
+		line[strlen(line) - 1] = '\0';
 		sscanf(line, "%255s %255s %255s\n", device, mount_path, rest);
 		if (!strcmp(device, mp)) {
 			fclose(fp);
@@ -91,9 +101,11 @@ bool isDeviceNodeMounted(const char *mp)
 	return false;
 }
 
-int ensure_dev_mounted(const char * devPath,const char * mountedPoint){
+int
+ensure_dev_mounted(const char *devPath, const char *mountedPoint)
+{
 	int ret;
-	if(devPath == NULL || mountedPoint == NULL){
+	if (devPath == NULL || mountedPoint == NULL) {
 		return -1;
 	}
 
@@ -101,65 +113,81 @@ int ensure_dev_mounted(const char * devPath,const char * mountedPoint){
 		printf("%s is mounted\n", devPath);
 	} else {
 		printf("%s nono no no \n", devPath);
-		mkdir(mountedPoint, 0755);  //in case it doesn't already exist
+		mkdir(mountedPoint, 0755);	//in case it doesn't already exist
 	}
 
 	startTiming();
 	ret = mount(devPath, mountedPoint, "vfat",
-			MS_NOATIME | MS_NODEV | MS_NODIRATIME, "");
+		    MS_NOATIME | MS_NODEV | MS_NODIRATIME, "");
 	endTimming();
 #if 1
-	if(ret == 0){
+	if (ret == 0) {
 		LOGD("mount %s with fs 'vfat' success\n", devPath);
 		return 0;
-	}else{
+	} else {
 		startTiming();
 		ret = mount(devPath, mountedPoint, "ntfs",
-				MS_NOATIME | MS_NODEV | MS_NODIRATIME, "");
+			    MS_NOATIME | MS_NODEV | MS_NODIRATIME, "");
 		endTimming();
-		if(ret == 0){
+		if (ret == 0) {
 			LOGD("mount %s with fs 'ntfs' success\n", devPath);
 			return 0;
-		}else{
+		} else {
 			startTiming();
 			ret = mount(devPath, mountedPoint, "ext4",
-					MS_NOATIME | MS_NODEV | MS_NODIRATIME, "");
+				    MS_NOATIME | MS_NODEV | MS_NODIRATIME, "");
 			endTimming();
-			if(ret == 0){
-				LOGD("mount %s with fs 'ext4' success\n", devPath);
+			if (ret == 0) {
+				LOGD("mount %s with fs 'ext4' success\n",
+				     devPath);
 				return 0;
-			}
-			else {
+			} else {
 				int status;
 				pid_t pid = fork();
 				if (pid > 0) {
 					waitpid(pid, &status, 0);
 					if (WIFEXITED(status)) {
 						if (WEXITSTATUS(status) != 0) {
-							fprintf(stderr, "%s terminated by exit(%d) \n", MOUNT_EXFAT,
-									WEXITSTATUS(status));
-						}
-						else
-						{
-							fprintf(stderr,"mount %s with fs 'exfat' success\n", devPath);
+							fprintf(stderr,
+								"%s terminated by exit(%d) \n",
+								MOUNT_EXFAT,
+								WEXITSTATUS
+								(status));
+						} else {
+							fprintf(stderr,
+								"mount %s with fs 'exfat' success\n",
+								devPath);
 							return 0;
 						}
 					} else if (WIFSIGNALED(status))
-						fprintf(stderr, "%s terminated by signal %d \n", MOUNT_EXFAT,
-								WTERMSIG(status));
+						fprintf(stderr,
+							"%s terminated by signal %d \n",
+							MOUNT_EXFAT,
+							WTERMSIG(status));
 					else if (WIFSTOPPED(status))
-						fprintf(stderr,  "%s stopped by signal %d \n", MOUNT_EXFAT,
-								WSTOPSIG(status));
+						fprintf(stderr,
+							"%s stopped by signal %d \n",
+							MOUNT_EXFAT,
+							WSTOPSIG(status));
 				} else if (pid == 0) {
-					fprintf(stderr,"try run %s\n", MOUNT_EXFAT);
-					if (execl(MOUNT_EXFAT, MOUNT_EXFAT, devPath,mountedPoint,"-o","noatime,nodiratime",(char *)NULL) < 0)
-					{
-						int err=errno;
-						fprintf(stderr,"Cannot run %s error %s \n", MOUNT_EXFAT, strerror(err));
+					fprintf(stderr, "try run %s\n",
+						MOUNT_EXFAT);
+					if (execl
+					    (MOUNT_EXFAT, MOUNT_EXFAT, devPath,
+					     mountedPoint, "-o",
+					     "noatime,nodiratime",
+					     (char *) NULL) < 0) {
+						int err = errno;
+						fprintf(stderr,
+							"Cannot run %s error %s \n",
+							MOUNT_EXFAT,
+							strerror(err));
 						exit(-1);
 					}
 				} else {
-					fprintf(stderr,"Fork failed trying to run %s\n", "/sbin/mount.exfat");
+					fprintf(stderr,
+						"Fork failed trying to run %s\n",
+						"/sbin/mount.exfat");
 				}
 			}
 		}
@@ -169,24 +197,26 @@ int ensure_dev_mounted(const char * devPath,const char * mountedPoint){
 #endif
 }
 
-int search_file_in_dev(const char * file, char *absolutePath,
-		const char *devPath, const char *devName){
-	if(!check_file_exists(devPath)){
+int
+search_file_in_dev(const char *file, char *absolutePath,
+		   const char *devPath, const char *devName)
+{
+	if (!check_file_exists(devPath)) {
 		LOGD("dev %s exists\n", devPath);
 		char mountedPoint[32];
 		sprintf(mountedPoint, "%s%s", USB_ROOT, devName);
 		//if the dev exists, try to mount it
-		if(!ensure_dev_mounted(devPath, mountedPoint)){
+		if (!ensure_dev_mounted(devPath, mountedPoint)) {
 			LOGD("dev %s mounted in %s\n", devPath, mountedPoint);
 			char desFile[PATH_MAX];
 			sprintf(desFile, "%s/%s", mountedPoint, file);
 			//if mount success.search des file in it
-			if(!check_file_exists(desFile)){
+			if (!check_file_exists(desFile)) {
 				//if find the file,return its absolute path
 				LOGD("file %s exist\n", desFile);
 				sprintf(absolutePath, "%s", desFile);
 				return 0;
-			}else{
+			} else {
 				ensure_dev_unmounted(mountedPoint);
 			}
 		}
@@ -194,18 +224,20 @@ int search_file_in_dev(const char * file, char *absolutePath,
 	return -1;
 }
 
-int search_file_in_usb(const char * file,char * absolutePath){
+int
+search_file_in_usb(const char *file, char *absolutePath)
+{
 	struct timeval now;
 	gettimeofday(&now, NULL);
 	int i = 0;
 	int j = 0;
 	struct timeval workTime;
 	long spends;
-	mkdir(USB_ROOT, 0755);  //in case dir USB_ROOT doesn't already exist
+	mkdir(USB_ROOT, 0755);	//in case dir USB_ROOT doesn't already exist
 	//do main work here
-	do{
+	do {
 		LOGD("begin....\n");
-		for(i = 0; i < MAX_DISK; i++){
+		for (i = 0; i < MAX_DISK; i++) {
 			char devDisk[32];
 			char devPartition[32];
 			char devName[8];
@@ -213,39 +245,48 @@ int search_file_in_usb(const char * file,char * absolutePath){
 			sprintf(devName, "sd%c", 'a' + i);
 			sprintf(devDisk, "/dev/%s", devName);
 			LOGD("check disk %s\n", devDisk);
-			if(check_file_exists(devDisk)){
+			if (check_file_exists(devDisk)) {
 				LOGD("dev %s does not exists (%s),waiting ...\n", devDisk, strerror(errno));
 				continue;
 			}
-			for(j = 1; j <= MAX_PARTITION; j++){
+			for (j = 1; j <= MAX_PARTITION; j++) {
 				sprintf(parName, "%s%d", devName, j);
-				sprintf(devPartition, "%s%d" ,devDisk, j);
-				if(!search_file_in_dev(file, absolutePath, devPartition, parName)){
+				sprintf(devPartition, "%s%d", devDisk, j);
+				if (!search_file_in_dev
+				    (file, absolutePath, devPartition,
+				     parName)) {
 					return 0;
 				}
 			}
-			if(j > MAX_PARTITION){
-				if(!search_file_in_dev(file, absolutePath, devDisk, devName)){
+			if (j > MAX_PARTITION) {
+				if (!search_file_in_dev
+				    (file, absolutePath, devDisk, devName)) {
 					return 0;
 				}
 			}
 		}
 		usleep(500000);
 		gettimeofday(&workTime, NULL);
-		spends = (workTime.tv_sec - now.tv_sec)*1000000 + (workTime.tv_usec - now.tv_usec);
-	}while(spends < TIME_OUT);
+		spends =
+		    (workTime.tv_sec - now.tv_sec) * 1000000 +
+		    (workTime.tv_usec - now.tv_usec);
+	} while (spends < TIME_OUT);
 	LOGD("Time to search %s is %ld\n", file, spends);
 	return -1;
 }
 
-int ensure_dev_unmounted(const char * mountedPoint){
+int
+ensure_dev_unmounted(const char *mountedPoint)
+{
 	int ret = umount(mountedPoint);
 	return ret;
 }
 
-int in_usb_device(const char * file){
+int
+in_usb_device(const char *file)
+{
 	int len = strlen(USB_ROOT);
-	if (strncmp(file, USB_ROOT, len) == 0){
+	if (strncmp(file, USB_ROOT, len) == 0) {
 		return 0;
 	}
 	return -1;

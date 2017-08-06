@@ -7,15 +7,17 @@
 #include <ctype.h>
 #include <errno.h>
 
-void getNameByPid(pid_t pid, char *task_name) {
+void
+getNameByPid(pid_t pid, char *task_name)
+{
 	char proc_pid_path[BUF_SIZE];
 	char title[128];
 	char buf[BUF_SIZE];
 
 	sprintf(proc_pid_path, "/proc/%d/status", pid);
-	FILE* fp = fopen(proc_pid_path, "r");
+	FILE *fp = fopen(proc_pid_path, "r");
 	if (NULL != fp) {
-		while (fgets(buf, BUF_SIZE-1, fp) != NULL) {
+		while (fgets(buf, BUF_SIZE - 1, fp) != NULL) {
 			sscanf(buf, "%s %*s", title);
 			if (!strncasecmp(title, "Name", strlen("Name"))) {
 				sscanf(buf, "%*s %s", task_name);
@@ -26,7 +28,8 @@ void getNameByPid(pid_t pid, char *task_name) {
 	}
 }
 
-char *basename(const char *path)
+char *
+basename(const char *path)
 {
 	register const char *s;
 	register const char *p;
@@ -49,13 +52,14 @@ char *basename(const char *path)
  *        < 0: error number
  *        >=0: how many pid found, pid_list will store the founded pid
  */
-int get_pid_by_name(const char* process_name, pid_t pid_list[], int list_size)
+int
+get_pid_by_name(const char *process_name, pid_t pid_list[], int list_size)
 {
 #define  MAX_BUF_SIZE       256
 
 	DIR *dir;
 	struct dirent *next;
-	int count=0;
+	int count = 0;
 	pid_t pid;
 	FILE *fp;
 	char *base_pname = NULL;
@@ -63,16 +67,15 @@ int get_pid_by_name(const char* process_name, pid_t pid_list[], int list_size)
 	char cmdline[MAX_BUF_SIZE];
 	char path[MAX_BUF_SIZE];
 
-	if(process_name == NULL || pid_list == NULL)
+	if (process_name == NULL || pid_list == NULL)
 		return -EINVAL;
 
 	base_pname = basename(process_name);
-	if(strlen(base_pname) <= 0)
+	if (strlen(base_pname) <= 0)
 		return -EINVAL;
 
 	dir = opendir("/proc");
-	if (!dir)
-	{
+	if (!dir) {
 		return -EIO;
 	}
 	while ((next = readdir(dir)) != NULL) {
@@ -83,33 +86,33 @@ int get_pid_by_name(const char* process_name, pid_t pid_list[], int list_size)
 		pid = strtol(next->d_name, NULL, 0);
 		sprintf(path, "/proc/%u/cmdline", pid);
 		fp = fopen(path, "r");
-		if(fp == NULL)
+		if (fp == NULL)
 			continue;
 
-		memset(cmdline, 0, sizeof(cmdline));
-		if(fread(cmdline, MAX_BUF_SIZE - 1, 1, fp) < 0){ 
+		memset(cmdline, 0, sizeof (cmdline));
+		if (fread(cmdline, MAX_BUF_SIZE - 1, 1, fp) < 0) {
 			fclose(fp);
 			continue;
 		}
 		fclose(fp);
 		base_fname = basename(cmdline);
 
-		if (strcmp(base_fname, base_pname) == 0 )
-		{
-			if(count >= list_size){
+		if (strcmp(base_fname, base_pname) == 0) {
+			if (count >= list_size) {
 				break;
-			}else{
+			} else {
 				pid_list[count] = pid;
 				count++;
 			}
 		}
 	}
-	closedir(dir) ;
+	closedir(dir);
 	return count;
 }
 
 /* If process is existed, return true */
-int is_process_exist(const char* process_name)
+int
+is_process_exist(const char *process_name)
 {
 	pid_t pid;
 
@@ -118,31 +121,37 @@ int is_process_exist(const char* process_name)
 
 #define MAX_PID_NUM 64
 
-int getPID(const char* process){
-	int ret = 0;  
-	int n;  
-	pid_t pid[MAX_PID_NUM];  
-	ret = get_pid_by_name(process, pid, MAX_PID_NUM);  
-	printf("process '%s' is existed? (%d): %c\n", process, ret, (ret > 0)?'y':'n');  
-	for(n=0;n<ret;n++){  
-		printf("%u\n", pid[n]);  
-	}  
+int
+getPID(const char *process)
+{
+	int ret = 0;
+	int n;
+	pid_t pid[MAX_PID_NUM];
+	ret = get_pid_by_name(process, pid, MAX_PID_NUM);
+	printf("process '%s' is existed? (%d): %c\n", process, ret,
+	       (ret > 0) ? 'y' : 'n');
+	for (n = 0; n < ret; n++) {
+		printf("%u\n", pid[n]);
+	}
 	return ret;
 }
 
-int killPID(const char* process){
-	int ret = 0;  
-	int n;  
-	pid_t pid[MAX_PID_NUM];  
+int
+killPID(const char *process)
+{
+	int ret = 0;
+	int n;
+	pid_t pid[MAX_PID_NUM];
 	char buff[512];
 
-	ret = get_pid_by_name(process, pid, MAX_PID_NUM);  
-	printf("kill process '%s' is existed? (%d): %c\n", process, ret, (ret > 0)?'y':'n');  
-	for(n=0;n<ret;n++){  
-		printf("%u\n", pid[n]);  
-		memset(buff, 0, sizeof(buff));
+	ret = get_pid_by_name(process, pid, MAX_PID_NUM);
+	printf("kill process '%s' is existed? (%d): %c\n", process, ret,
+	       (ret > 0) ? 'y' : 'n');
+	for (n = 0; n < ret; n++) {
+		printf("%u\n", pid[n]);
+		memset(buff, 0, sizeof (buff));
 		sprintf(buff, "kill %u\n", pid[n]);
 		system(buff);
-	}  
+	}
 	return ret;
 }
