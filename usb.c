@@ -108,7 +108,7 @@ int ensure_dev_mounted(const char * devPath,const char * mountedPoint){
 	ret = mount(devPath, mountedPoint, "vfat",
 			MS_NOATIME | MS_NODEV | MS_NODIRATIME, "");
 	endTimming();
-#if 0
+#if 1
 	if(ret == 0){
 		LOGD("mount %s with fs 'vfat' success\n", devPath);
 		return 0;

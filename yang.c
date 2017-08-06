@@ -14,8 +14,11 @@
 #endif
 
 #define USBPATH  "/dev/sdd1"
+
+#define TEST_MOUNT  1
+#define TEST_STR    0
 #define TEST_STRUCT 0
-#define TEST_STR    1
+
 typedef struct _usb_info {
 	char no;
 	char name[32];
@@ -27,7 +30,7 @@ int main(int arc, char **argv)
 {
 	char *absolutePath = (char *)malloc(PATH_MAX);
 
-#if 0
+#if TEST_MOUNT 
 	if ( !search_file_in_usb("update.zip", absolutePath) ) {
 		dbgprint("--%s--\n", absolutePath);	
 	}
@@ -101,11 +104,11 @@ int main(int arc, char **argv)
 	pinfo = (usb_info *)readbuf;
 	dbgprint("no:%c, name:%s, speed:%d, attr:%s\n", pinfo->no, pinfo->name, pinfo->speed, pinfo->attr);
 	fclose(fp);
-#endif
 
 	return 0;
 fail2:
 	fclose(fp);
 fail1:
 	exit(-1);
+#endif
 }
