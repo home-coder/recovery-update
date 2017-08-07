@@ -8,7 +8,7 @@
 #include <errno.h>
 
 void
-getNameByPid(pid_t pid, char *task_name)
+get_name_by_pid(pid_t pid, char *task_name)
 {
 	char proc_pid_path[BUF_SIZE];
 	char title[128];

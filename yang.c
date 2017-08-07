@@ -15,9 +15,10 @@
 
 #define USBPATH  "/dev/sdd1"
 
-#define TEST_MOUNT  1
-#define TEST_STR    0
-#define TEST_STRUCT 0
+#define TEST_MOUNT  1 //测试挂载一个分区节点到系统的目录
+#define TEST_STR    0 //测试写入分区一个字符串
+#define TEST_STRUCT 0 //测试写入分区一个结构体，最好不要含有指针
+#define TEST_PID    0 //测试通过进程名字找到进程id，反之通过id找到进程的名字
 
 typedef struct _usb_info {
 	char no;
@@ -61,6 +62,12 @@ main(int arc, char **argv)
 
 	printf("%s\n", readbuf);
 	fclose(fp);
+
+	return 0;
+      fail2:
+	fclose(fp);
+      fail1:
+	exit(-1);
 #endif
 	printf("======================================\n");
 #if TEST_STRUCT
@@ -115,5 +122,8 @@ main(int arc, char **argv)
 	fclose(fp);
       fail1:
 	exit(-1);
+#endif
+
+#if TEST_PID
 #endif
 }
