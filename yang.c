@@ -19,6 +19,7 @@
 #define TEST_STR    0 //测试写入分区一个字符串
 #define TEST_STRUCT 0 //测试写入分区一个结构体，最好不要含有指针
 #define TEST_PID    0 //测试通过进程名字找到进程id，反之通过id找到进程的名字
+#define TEST_FSTAB  1 //测试文件系统一系列操作
 
 typedef struct _usb_info {
 	char no;
@@ -37,6 +38,9 @@ main(int arc, char **argv)
 		dbgprint("--%s--\n", absolutePath);
 	}
 	//ensure_path_mounted(absolutePath);
+#endif
+#if TEST_FSTAB
+	load_volume_table();
 #endif
 
 #if TEST_STR

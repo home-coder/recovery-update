@@ -29,6 +29,7 @@
 #include "make_ext4fs.h"
 
 static struct fstab *fstab = NULL;
+static const char *root_fstab_sunxi = "fstab.sun8i";
 
 extern struct selabel_handle *sehandle;
 
@@ -38,12 +39,12 @@ load_volume_table()
 	int i;
 	int ret;
 
-	fstab = fs_mgr_read_fstab("/etc/recovery.fstab");
+	fstab = fs_mgr_read_fstab(root_fstab_sunxi);
 	if (!fstab) {
-		LOGE("failed to read /etc/recovery.fstab\n");
+		dbgprint("failed to read %s\n", root_fstab_sunxi);
 		return;
 	}
-
+#if 0
 	ret = fs_mgr_add_entry(fstab, "/tmp", "ramdisk", "ramdisk", 0);
 	if (ret < 0) {
 		LOGE("failed to add /tmp entry to fstab\n");
@@ -51,7 +52,7 @@ load_volume_table()
 		fstab = NULL;
 		return;
 	}
-
+#endif
 	printf("recovery filesystem table\n");
 	printf("=========================\n");
 	for (i = 0; i < fstab->num_entries; ++i) {

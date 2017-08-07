@@ -14,12 +14,12 @@
 #define TIME_OUT 6000000
 
 static const char *USB_ROOT = "/usb/";
-static const char *USB_POINT_UBUNTU = "/media/jiangxiujie/";
+static const char *USB_POINT_UBUNTU = "/mnt/usbhost";
 
 struct timeval tpstart, tpend;
 float timeuse = 0;
 
-#define MOUNT_EXFAT            "/sbin/mount.exfat"
+#define MOUNT_EXFAT            "/system/bin/mount.exfat"
 
 void
 startTiming()
@@ -257,7 +257,7 @@ search_file_in_usb(const char *file, char *absolutePath)
 			char devName[8];
 			char parName[8];
 			sprintf(devName, "sd%c", 'a' + i);
-			sprintf(devDisk, "/dev/%s", devName);
+			sprintf(devDisk, "/dev/block/%s", devName);
 			LOGD("check disk %s\n", devDisk);
 			if (check_file_exists(devDisk)) {
 				LOGD("dev %s does not exists (%s),waiting ...\n", devDisk, strerror(errno));
