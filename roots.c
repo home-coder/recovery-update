@@ -26,7 +26,6 @@
 #include "mtdutils/mtdutils.h"
 #include "mtdutils/mounts.h"
 #include "roots.h"
-#include "common.h"
 #include "make_ext4fs.h"
 
 static struct fstab *fstab = NULL;

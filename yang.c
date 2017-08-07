@@ -117,13 +117,16 @@ main(int arc, char **argv)
 		 pinfo->speed, pinfo->attr);
 	fclose(fp);
 
-	return 0;
-      fail2:
-	fclose(fp);
-      fail1:
-	exit(-1);
 #endif
 
 #if TEST_PID
 #endif
+	return 0;
+      fail2:
+#if TEST_STR || TEST_STRUCT
+	fclose(fp);
+#endif
+      fail1:
+	exit(-1);
+
 }

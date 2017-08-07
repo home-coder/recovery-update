@@ -21,7 +21,6 @@
 #include <stdarg.h>
 #include <string.h>
 #include <stdlib.h>
-//#include "roots.h"
 
 #ifdef __cplusplus
 extern "C" {
