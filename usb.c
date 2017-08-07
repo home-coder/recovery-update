@@ -14,6 +14,8 @@
 #define TIME_OUT 6000000
 
 static const char *USB_ROOT = "/usb/";
+static const char *USB_POINT_UBUNTU = "/media/jiangxiujie/";
+
 struct timeval tpstart, tpend;
 float timeuse = 0;
 
@@ -74,10 +76,9 @@ isMountpointMounted(const char *mp)
 }
 
 bool
-isDeviceNodeMounted(const char *mp)
+isDeviceNodeMounted(const char *devpath, char *mount_path)
 {
 	char device[256];
-	char mount_path[256];
 	char rest[256];
 	FILE *fp;
 	char line[1024];
@@ -91,7 +92,7 @@ isDeviceNodeMounted(const char *mp)
 	while (fgets(line, sizeof (line), fp)) {
 		line[strlen(line) - 1] = '\0';
 		sscanf(line, "%255s %255s %255s\n", device, mount_path, rest);
-		if (!strcmp(device, mp)) {
+		if (!strcmp(device, devpath)) {
 			fclose(fp);
 			return true;
 		}
@@ -102,15 +103,27 @@ isDeviceNodeMounted(const char *mp)
 }
 
 int
-ensure_dev_mounted(const char *devPath, const char *mountedPoint)
+ensure_dev_mounted(const char *devPath, char *mountedPoint)
 {
+	char mount_path[256];
 	int ret;
+
 	if (devPath == NULL || mountedPoint == NULL) {
 		return -1;
 	}
 
-	if (isDeviceNodeMounted(devPath)) {
-		printf("%s is mounted\n", devPath);
+	if (isDeviceNodeMounted(devPath, mount_path)) {
+		printf("%s is mounted %s\n", devPath, mount_path);
+		/* 如果是默认的U盘挂载点比如 ubuntu下/media/xxx android: /mnt/udisk or /mnt/usbhost/xx ,
+		   那么就修改mountedPoint,并且不在重新挂载，即不走下面流程了
+		   */
+		int len = strlen(USB_POINT_UBUNTU);
+		if (!strncmp(mount_path, USB_POINT_UBUNTU, len)) {
+			strncpy(mountedPoint, mount_path, strlen(mount_path) + 1);
+			printf("mountedPoint: %s\n", mountedPoint);
+			return 0;
+		} else {
+		}
 	} else {
 		printf("%s nono no no \n", devPath);
 		mkdir(mountedPoint, 0755);	//in case it doesn't already exist
@@ -209,11 +222,12 @@ search_file_in_dev(const char *file, char *absolutePath,
 		if (!ensure_dev_mounted(devPath, mountedPoint)) {
 			LOGD("dev %s mounted in %s\n", devPath, mountedPoint);
 			char desFile[PATH_MAX];
+			dbgprint("mountedPoint %s\n", mountedPoint);
 			sprintf(desFile, "%s/%s", mountedPoint, file);
 			//if mount success.search des file in it
 			if (!check_file_exists(desFile)) {
 				//if find the file,return its absolute path
-				LOGD("file %s exist\n", desFile);
+				dbgprint("file %s exist\n", desFile);
 				sprintf(absolutePath, "%s", desFile);
 				return 0;
 			} else {
@@ -290,4 +304,19 @@ in_usb_device(const char *file)
 		return 0;
 	}
 	return -1;
+}
+
+int usb_put(const char *file_path, const char *usb_dir)
+{
+	char buf[512];
+	sprintf(buf, "cp %s %s", file_path, usb_dir);
+	buf[strlen(buf) + 1] = '\0';
+	printf("buf: %s\n", buf);
+
+	return system(buf);
+}
+
+int usb_get()
+{
+	return 0;
 }

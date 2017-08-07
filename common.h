@@ -31,6 +31,16 @@ extern "C" {
 #define LOGW(...) fprintf(stdout, "W:" __VA_ARGS__)
 #define LOGI(...) fprintf(stdout, "I:" __VA_ARGS__)
 
+#define DEBUG
+#ifdef DEBUG
+#define dbgprint(format,args...) ({ \
+		fprintf (stderr, "[%s] <%d>-->", __func__, __LINE__); \
+		fprintf(stderr, format, ##args);})
+#else
+#define dbgprint(format,args...)
+#endif
+
+
 #define PATH_MAX   64
 
 #if 0

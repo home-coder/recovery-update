@@ -11,7 +11,7 @@ extern "C" {
 int check_file_exists(const char *path);
 
 //return 0 if the usb mounted success
-int ensure_dev_mounted(const char *devPath, const char *mountedPoint);
+int ensure_dev_mounted(const char *devPath, char *mountedPoint);
 
 //return 0 if the usb unmounted success
 int ensure_dev_unmounted(const char *mountedPoint);
