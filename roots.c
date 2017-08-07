@@ -33,6 +33,23 @@ static const char *root_fstab_sunxi = "fstab.sun8i";
 
 extern struct selabel_handle *sehandle;
 
+#if 0
+recovery filesystem table
+=========================
+0 /system ext4 /dev/block/by-name/system 0
+1 /cache ext4 /dev/block/by-name/cache 0
+2 /data ext4 /dev/block/by-name/UDISK 0
+3 /mnt/Reserve0 vfat /dev/block/by-name/Reserve0 0
+4 auto vfat /devices/platform/sunxi-mmc.0/mmc_host 0
+5 auto vfat /devices/platform/sunxi-ehci.1 0
+6 auto vfat /devices/platform/sunxi-ehci.2 0
+7 auto vfat /devices/platform/sunxi_hcd_host0 0
+8 auto vfat /devices/platform/sunxi-ohci.1 0
+9 auto vfat /devices/platform/sunxi-ohci.2 0
+10 none swap /dev/block/zram0 0
+======================================
+
+#endif
 void
 load_volume_table()
 {
@@ -57,8 +74,8 @@ load_volume_table()
 	printf("=========================\n");
 	for (i = 0; i < fstab->num_entries; ++i) {
 		Volume *v = &fstab->recs[i];
-		printf("  %d %s %s %s %lld\n", i, v->mount_point, v->fs_type,
-		       v->blk_device, v->length);
+		printf("  %d %s %s %s %lld %s\n",
+		 i, v->mount_point, v->fs_type, v->blk_device, v->length, v->label);
 	}
 	printf("\n");
 }

@@ -25,8 +25,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#define LOGE(...) ui_print("E:" __VA_ARGS__)
+#define LOGE(...) fprintf(stdout, "E:" __VA_ARGS__)
 #define LOGW(...) fprintf(stdout, "W:" __VA_ARGS__)
 #define LOGI(...) fprintf(stdout, "I:" __VA_ARGS__)
 
@@ -59,7 +58,6 @@ typedef struct fstab_rec Volume;
 // fopen a file, mounting volumes and making parent dirs as necessary.
 FILE* fopen_path(const char *path, const char *mode);
 
-void ui_print(const char* format, ...);
 
 #ifdef __cplusplus
 }

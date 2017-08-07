@@ -31,16 +31,21 @@ typedef struct _usb_info {
 int
 main(int arc, char **argv)
 {
+	int ret = 0;
 	char *absolutePath = (char *) malloc(PATH_MAX);
 
 #if TEST_MOUNT
 	if (!search_file_in_usb("update.zip", absolutePath)) {
 		dbgprint("--%s--\n", absolutePath);
 	}
-	//ensure_path_mounted(absolutePath);
 #endif
 #if TEST_FSTAB
 	load_volume_table();
+	//test usb
+	ret = ensure_path_mounted("auto");
+	if (ret == 0) {
+		dbgprint("/usb/usbhost/Storage1 is mounted\n");
+	}
 #endif
 
 #if TEST_STR
