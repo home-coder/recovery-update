@@ -55,8 +55,6 @@ load_volume_table()
 {
 	int i;
 	int ret;
-	struct fstab *mfstab = NULL;
-	dbgprint("%d", mfstab->num_entries);
 	fstab = fs_mgr_read_fstab(root_fstab_sunxi);
 	if (!fstab) {
 		dbgprint("failed to read %s\n", root_fstab_sunxi);

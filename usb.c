@@ -333,8 +333,7 @@ int usb_get()
 int mount_dev2point(char *devpt, const char *mountpt)
 {
 	struct fstab *fstab = NULL;
-	dbgprint("%d", fstab->num_entries);
-#if 0
+
 	int i = 0, j = 0, ret = 0;
 	char mountpoint[64] = {0};
 
@@ -352,23 +351,27 @@ int mount_dev2point(char *devpt, const char *mountpt)
 			if (!strncmp(v->blk_device, sys_uevent[j], sizeof(sys_uevent[j]))) {
 				dbgprint("%s is matched, and it is USB2.0\n", devpt);
 				if (!strcmp(v->fs_type, "vfat")) {
-					sprintf(mountpoint, "%s/Strage0%d", mountpt, j);
-					ret = mount(devpt, mountpt, "vfat",
-							MS_NOATIME | MS_NODEV | MS_NODIRATIME, "");
-					if (ret == 0) {
-						dbgprint("%s mount  %s success\n", devpt, mountpoint);
-						return ret;
-					} else {
-						dbgprint("mounted failed\n");
-						return -1;
+					sprintf(mountpoint, "%s/Storage0%d", mountpt, j + 1);
+					//TODO mkdir mountpoint
+					mkdir(mountpoint, 0755);
+					if (!check_file_exists(mountpoint)) {
+						ret = mount(devpt, mountpoint, "vfat",
+								MS_NOATIME | MS_NODEV | MS_NODIRATIME, "");
+						if (ret == 0) {
+							dbgprint("%s mount  %s success\n", devpt, mountpoint);
+							return ret;
+						} else {
+							dbgprint("mounted failed\n");
+							return -1;
+						}
 					}
+					return -1;
 				}
 			}
 
 		}
 	}
-#endif
-return 0;
+	return -1;
 }
 
 int usb_mount()
