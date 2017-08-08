@@ -26,6 +26,9 @@ extern "C" {
 // Load and parse volume data from /etc/recovery.fstab.
 void load_volume_table();
 
+// 给其他地方提供get set方法
+struct fstab *get_fstab();
+
 // Return the Volume* record for this path (or NULL).
 Volume* volume_for_path(const char* path);
 

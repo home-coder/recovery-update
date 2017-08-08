@@ -28,34 +28,35 @@
 #include "roots.h"
 #include "make_ext4fs.h"
 
-static struct fstab *fstab = NULL;
+struct fstab *fstab = NULL;
 static const char *root_fstab_sunxi = "fstab.sun8i";
 
 extern struct selabel_handle *sehandle;
 
-#if 0
-recovery filesystem table
-=========================
-0 /system ext4 /dev/block/by-name/system 0
-1 /cache ext4 /dev/block/by-name/cache 0
-2 /data ext4 /dev/block/by-name/UDISK 0
-3 /mnt/Reserve0 vfat /dev/block/by-name/Reserve0 0
-4 auto vfat /devices/platform/sunxi-mmc.0/mmc_host 0
-5 auto vfat /devices/platform/sunxi-ehci.1 0
-6 auto vfat /devices/platform/sunxi-ehci.2 0
-7 auto vfat /devices/platform/sunxi_hcd_host0 0
-8 auto vfat /devices/platform/sunxi-ohci.1 0
-9 auto vfat /devices/platform/sunxi-ohci.2 0
-10 none swap /dev/block/zram0 0
-======================================
+/*
+	filesystem table
+	=========================
+	0 /system ext4 /dev/block/by-name/system 0 (null)
+	1 /cache ext4 /dev/block/by-name/cache 0 (null)
+	2 /data ext4 /dev/block/by-name/UDISK 0 (null)
+	3 /mnt/Reserve0 vfat /dev/block/by-name/Reserve0 0 (null)
+	4 auto vfat /devices/platform/sunxi-mmc.0/mmc_host 0 extsd
+	5 auto vfat /devices/platform/sunxi-ehci.1 0 usbhost0
+	6 auto vfat /devices/platform/sunxi-ehci.2 0 usbhost1
+	7 auto vfat /devices/platform/sunxi_hcd_host0 0 usbhost2
+	8 auto vfat /devices/platform/sunxi-ohci.1 0 usbhost0
+	9 auto vfat /devices/platform/sunxi-ohci.2 0 usbhost1
+	10 none swap /dev/block/zram0 0 (null)
 
-#endif
+*/
+
 void
 load_volume_table()
 {
 	int i;
 	int ret;
-
+	struct fstab *mfstab = NULL;
+	dbgprint("%d", mfstab->num_entries);
 	fstab = fs_mgr_read_fstab(root_fstab_sunxi);
 	if (!fstab) {
 		dbgprint("failed to read %s\n", root_fstab_sunxi);
@@ -78,6 +79,14 @@ load_volume_table()
 		 i, v->mount_point, v->fs_type, v->blk_device, v->length, v->label);
 	}
 	printf("\n");
+}
+
+struct fstab *get_fstab()
+{
+	if (!fstab) {
+		load_volume_table();
+	}
+	return fstab;
 }
 
 Volume *
@@ -106,6 +115,7 @@ ensure_path_mounted(const char *path)
 		return -1;
 	}
 
+	//查看/proc/mounts
 	const MountedVolume *mv =
 	    find_mounted_volume_by_mount_point(v->mount_point);
 	if (mv) {

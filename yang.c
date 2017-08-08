@@ -42,10 +42,12 @@ main(int arc, char **argv)
 #if TEST_FSTAB
 	load_volume_table();
 	//test usb
-	ret = ensure_path_mounted("auto");
-	if (ret == 0) {
-		dbgprint("/usb/usbhost/Storage1 is mounted\n");
-	}
+	/*
+	1.根据fstab配置文件挂载U盘(重点是 label=usbhost)，目前主动调用并挂载U盘，以后uevent回调即可
+	2.挂载U盘后，重新写入fstab的配置，将auto等替换成挂载点比如/mnt/usbhost/MyStorage
+	3.测试U盘是否已经挂载，调用ensure_path_mounted或者自己写的那个usb.c中的方法
+	*/
+	usb_mount();
 #endif
 
 #if TEST_STR

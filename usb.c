@@ -8,13 +8,21 @@
 #include <sys/wait.h>
 
 #include "usb.h"
+#include "roots.h"
 
 #define MAX_DISK 4
 #define MAX_PARTITION 8
 #define TIME_OUT 6000000
 
 static const char *USB_ROOT = "/usb/";
-static const char *USB_POINT_UBUNTU = "/mnt/usbhost";
+static const char *USB_POINT_UBUNTU = "/media/jiangxiujie";
+static const char *USB_MONTPOINT = "/mnt/myhost";
+
+//usb2.0
+static const char *sys_uevent[] = {
+	"/devices/platform/sunxi-ehci.1",
+	"/devices/platform/sunxi-ehci.2"
+};
 
 struct timeval tpstart, tpend;
 float timeuse = 0;
@@ -319,4 +327,94 @@ int usb_put(const char *file_path, const char *usb_dir)
 int usb_get()
 {
 	return 0;
+}
+
+int mount_dev2point(char *devpt, const char *mountpt)
+{
+	struct fstab *fstab = NULL;
+	dbgprint("%d", fstab->num_entries);
+#if 0
+	int i = 0, j = 0, ret = 0;
+	char mountpoint[64] = {0};
+
+	if (check_file_exists(devpt)) {
+		return -1;
+	}
+
+	//根据label 和 uevent事件/device/platform/xxx是usbhost，得知设备为vfat，使用vfat的fstype来挂载U盘
+	fstab = get_fstab();
+	dbgprint("%d", fstab->num_entries);
+	for (i = 0; i < fstab->num_entries; ++i) {
+		Volume *v = &fstab->recs[i];
+		printf("  %d %s %s %s %lld %s\n", i, v->mount_point, v->fs_type, v->blk_device, v->length, v->label);
+		for (j = 0; j < sizeof(sys_uevent)/sizeof(sys_uevent[0]); j++) {
+			if (!strncmp(v->blk_device, sys_uevent[j], sizeof(sys_uevent[j]))) {
+				dbgprint("%s is matched, and it is USB2.0\n", devpt);
+				if (!strcmp(v->fs_type, "vfat")) {
+					sprintf(mountpoint, "%s/Strage0%d", mountpt, j);
+					ret = mount(devpt, mountpt, "vfat",
+							MS_NOATIME | MS_NODEV | MS_NODIRATIME, "");
+					if (ret == 0) {
+						dbgprint("%s mount  %s success\n", devpt, mountpoint);
+						return ret;
+					} else {
+						dbgprint("mounted failed\n");
+						return -1;
+					}
+				}
+			}
+
+		}
+	}
+#endif
+return 0;
+}
+
+int usb_mount()
+{
+	struct timeval now;
+	gettimeofday(&now, NULL);
+	int i = 0;
+	int j = 0;
+	struct timeval workTime;
+	long spends;
+	mkdir(USB_MONTPOINT, 0755);
+	//do main work here
+	do {
+		LOGD("begin....\n");
+		for (i = 0; i < MAX_DISK; i++) {
+			char devDisk[32];
+			char devPartition[32];
+			char devName[8];
+			char parName[8];
+			sprintf(devName, "sd%c", 'a' + i);
+			sprintf(devDisk, "/dev/block/%s", devName);
+			LOGD("check disk %s\n", devDisk);
+			if (check_file_exists(devDisk)) {
+				LOGD("dev %s does not exists (%s),waiting ...\n", devDisk, strerror(errno));
+				continue;
+			}
+			for (j = 1; j <= MAX_PARTITION; j++) {
+				sprintf(parName, "%s%d", devName, j);
+				sprintf(devPartition, "%s%d", devDisk, j);
+				//TODO
+				if (mount_dev2point(devPartition, USB_MONTPOINT)) {
+					dbgprint("%s is not exsit\n", devPartition);
+					continue;
+				} else {
+					//TODO 挂载成功后，将相关信息重新写入fstab数据结构
+					return 0;
+				}
+			}
+		}
+		usleep(500000);
+		gettimeofday(&workTime, NULL);
+		spends =
+		    (workTime.tv_sec - now.tv_sec) * 1000000 +
+		    (workTime.tv_usec - now.tv_usec);
+	} while (spends < TIME_OUT);
+	LOGD("Time to search %s is %ld\n", file, spends);
+
+	return -1;
+
 }
