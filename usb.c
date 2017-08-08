@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include <sys/time.h>
 #include <sys/wait.h>
+#include <fs_mgr.h>
 
 #include "usb.h"
 #include "roots.h"
