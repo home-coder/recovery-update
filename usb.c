@@ -374,6 +374,9 @@ int mount_dev2point(char *devpt, const char *mountpt)
 	return -1;
 }
 
+/*
+TODO， 两种情况，1.开机直接检测并挂载设备，2.正常启动后要动态挂载，放到uevent的callback里面处理挂载
+*/
 int usb_mount()
 {
 	struct timeval now;
