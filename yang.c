@@ -47,7 +47,10 @@ main(int arc, char **argv)
 	2.挂载U盘后，重新写入fstab的配置，将auto等替换成挂载点比如/mnt/usbhost/MyStorage
 	3.测试U盘是否已经挂载，调用ensure_path_mounted或者自己写的那个usb.c中的方法
 	*/
+	//第一次挂载
 	usb_mount();
+	//后期热插拔
+	usb_register_uevent();
 #endif
 
 #if TEST_STR

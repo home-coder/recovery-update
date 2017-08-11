@@ -19,10 +19,17 @@ static const char *USB_ROOT = "/usb/";
 static const char *USB_POINT_UBUNTU = "/media/jiangxiujie";
 static const char *USB_MONTPOINT = "/mnt/myhost";
 
+struct usb_uevent {
+	char *subsystem;
+	char *action;
+	char **usb_path;
+};
+
 //usb2.0
 static const char *sys_uevent[] = {
 	"/devices/platform/sunxi-ehci.1",
-	"/devices/platform/sunxi-ehci.2"
+	"/devices/platform/sunxi-ehci.2",
+	NULL
 };
 
 struct timeval tpstart, tpend;
@@ -424,4 +431,16 @@ int usb_mount()
 
 	return -1;
 
+}
+
+void usb_register_uevent()
+{
+	//封装注册事件
+	struct usb_uevent usb_evt;
+	usb_evt.subsystem = "usb";
+	usb_evt.action = "add";
+	usb_evt.usb_path = sys_uevent;
+
+	//向uevent类注册一个usb的热插拔事件
+	uevent_register_client(&usb_evt);
 }
