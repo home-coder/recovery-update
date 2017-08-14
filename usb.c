@@ -446,7 +446,7 @@ int hotplug_dev2point(char *devpt, const char *mountpt, char *usb_path)
 		printf("  %d %s %s %s %lld %s\n", i, v->mount_point, v->fs_type, v->blk_device, v->length, v->label);
 		if (!strncmp(v->blk_device, usb_path, strlen(v->blk_device))) {
 			if (!strcmp(v->fs_type, "vfat")) {
-				sprintf(mountpoint, "%s/Storage0%d", mountpt, j + 1);
+				sprintf(mountpoint, "%s/%s", mountpt, v->label);//usbhost0 usbhost1
 				//TODO mkdir mountpoint
 				mkdir(mountpoint, 0755);
 				if (!check_file_exists(mountpoint)) {
