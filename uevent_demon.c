@@ -27,7 +27,7 @@ struct uevent {
 	const char *keyevent;
 };
 
-#define DEBUG   1
+#define DEBUG   0
 
 #if 0
 struct ucred {
@@ -193,6 +193,7 @@ void handle_device_fd(int fd)
 void uevent_register_client(struct usb_uevent *usb_evt)
 {
 	gusb_evt = usb_evt;	
+	dbgprint("---subsystem:%s action:%s\n", gusb_evt->subsystem, gusb_evt->action);
 }
 #endif
 

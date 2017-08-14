@@ -348,7 +348,7 @@ int mount_dev2point(char *devpt, const char *mountpt)
 	for (i = 0; i < fstab->num_entries; ++i) {
 		Volume *v = &fstab->recs[i];
 		printf("  %d %s %s %s %lld %s\n", i, v->mount_point, v->fs_type, v->blk_device, v->length, v->label);
-		for (j = 0; j < sizeof(sys_uevent)/sizeof(sys_uevent[0]); j++) {
+		for (j = 0; sys_uevent[j] != NULL; j++) {
 			if (!strncmp(v->blk_device, sys_uevent[j], sizeof(sys_uevent[j]))) {
 				dbgprint("%s is matched, and it is USB2.0\n", devpt);
 				if (!strcmp(v->fs_type, "vfat")) {
@@ -386,6 +386,8 @@ int usb_mount()
 	int j = 0;
 	struct timeval workTime;
 	long spends;
+
+	dbgprint("uevent call back--->\n");
 	mkdir(USB_MONTPOINT, 0755);
 	//do main work here
 	do {

@@ -48,10 +48,10 @@ main(int arc, char **argv)
 	3.测试U盘是否已经挂载，调用ensure_path_mounted或者自己写的那个usb.c中的方法
 	*/
 	//第一次挂载
-	usb_mount();
+	//usb_mount();
 	//后期热插拔
-	uevent_demon_init();
 	usb_register_uevent();
+	uevent_demon_init();
 #endif
 
 #if TEST_STR
