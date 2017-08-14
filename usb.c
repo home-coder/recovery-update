@@ -11,7 +11,7 @@
 #include "usb.h"
 #include "roots.h"
 
-#define MAX_DISK 4
+#define MAX_DISK 8
 #define MAX_PARTITION 8
 #define TIME_OUT 6000000
 
@@ -387,7 +387,6 @@ int usb_mount()
 	struct timeval workTime;
 	long spends;
 
-	dbgprint("uevent call back--->\n");
 	mkdir(USB_MONTPOINT, 0755);
 	//do main work here
 	do {
@@ -429,6 +428,96 @@ int usb_mount()
 
 }
 
+int hotplug_dev2point(char *devpt, const char *mountpt, char *usb_path)
+{
+	struct fstab *fstab = NULL;
+
+	int i = 0, j = 0, ret = 0;
+	char mountpoint[64] = {0};
+
+	if (check_file_exists(devpt)) {
+		return -1;
+	}
+
+	fstab = get_fstab();
+	dbgprint("%d", fstab->num_entries);
+	for (i = 0; i < fstab->num_entries; ++i) {
+		Volume *v = &fstab->recs[i];
+		printf("  %d %s %s %s %lld %s\n", i, v->mount_point, v->fs_type, v->blk_device, v->length, v->label);
+		if (!strncmp(v->blk_device, usb_path, strlen(v->blk_device))) {
+			if (!strcmp(v->fs_type, "vfat")) {
+				sprintf(mountpoint, "%s/Storage0%d", mountpt, j + 1);
+				//TODO mkdir mountpoint
+				mkdir(mountpoint, 0755);
+				if (!check_file_exists(mountpoint)) {
+					ret = mount(devpt, mountpoint, "vfat",
+							MS_NOATIME | MS_NODEV | MS_NODIRATIME, "");
+					if (ret == 0) {
+						dbgprint("%s mount  %s success\n", devpt, mountpoint);
+						return ret;
+					} else {
+						dbgprint("mounted failed\n");
+						return -1;
+					}
+				}
+				return -1;
+			}
+		}
+	}
+	return -1;
+}
+
+int hotplug_usb_mount(char *usb_path)
+{
+	struct timeval now;
+	gettimeofday(&now, NULL);
+	int i = 0;
+	int j = 0;
+	struct timeval workTime;
+	long spends;
+
+	dbgprint("uevent call back--->\n");
+	mkdir(USB_MONTPOINT, 0755);
+	//do main work here
+	do {
+		LOGD("begin....\n");
+		for (i = 0; i < MAX_DISK; i++) {
+			char devDisk[32];
+			char devPartition[32];
+			char devName[8];
+			char parName[8];
+			sprintf(devName, "sd%c", 'a' + i);
+			sprintf(devDisk, "/dev/block/%s", devName);
+			LOGD("check disk %s\n", devDisk);
+			if (check_file_exists(devDisk)) {
+				LOGD("dev %s does not exists (%s),waiting ...\n", devDisk, strerror(errno));
+				continue;
+			}
+			for (j = 1; j <= MAX_PARTITION; j++) {
+				sprintf(parName, "%s%d", devName, j);
+				sprintf(devPartition, "%s%d", devDisk, j);
+				//TODO
+				if (hotplug_dev2point(devPartition, USB_MONTPOINT, usb_path)) {
+					dbgprint("%s is not exsit\n", devPartition);
+					continue;
+				} else {
+					//TODO 挂载成功后，将相关信息重新写入fstab数据结构
+					return 0;
+				}
+			}
+		}
+		usleep(500000);
+		gettimeofday(&workTime, NULL);
+		spends =
+		    (workTime.tv_sec - now.tv_sec) * 1000000 +
+		    (workTime.tv_usec - now.tv_usec);
+	} while (spends < TIME_OUT);
+	LOGD("Time to search %s is %ld\n", file, spends);
+
+	return -1;
+
+}
+
 void usb_register_uevent()
 {
 	//封装注册事件
@@ -436,7 +525,7 @@ void usb_register_uevent()
 	usb_evt.subsystem = "usb";
 	usb_evt.action = "add";
 	usb_evt.usb_path = sys_uevent;
-	usb_evt.usb_mount_callback = usb_mount;
+	usb_evt.usb_mount_callback = hotplug_usb_mount;
 
 	//向uevent类注册一个usb的热插拔事件
 	uevent_register_client(&usb_evt);

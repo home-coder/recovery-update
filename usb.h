@@ -11,7 +11,7 @@ struct usb_uevent {
 	char *subsystem;
 	char *action;
 	char **usb_path;
-	int (*usb_mount_callback)();
+	int (*usb_mount_callback)(char *usb_path);
 };
 
 //return 0 if exists

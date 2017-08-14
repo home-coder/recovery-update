@@ -74,12 +74,12 @@ void process_event(struct uevent *uevent)
 		dbgprint("invalid event\n");	
 	} else {
 		if ( !strcmp(gusb_evt->subsystem, uevent->subsystem) ) {
+			dbgprint("-------------%s------%s-------------\n", gusb_evt->action, uevent->action);
 			if ( !strcmp(gusb_evt->action, uevent->action) ) {
-				dbgprint("hotplug event now, call mounting...\n");
-				gusb_evt->usb_mount_callback();
+				dbgprint("-----call mounting %s...\n", uevent->path);
+				gusb_evt->usb_mount_callback(uevent->path);
 			}
 		} else {
-			dbgprint("--------------------------------\n");
 		}
 	}
 }
@@ -95,7 +95,7 @@ static void parse_event(const char *msg, struct uevent *uevent)
 	uevent->minor = -1;
 
 	while(*msg) {
-		printf("%s\n", msg);
+		//printf("%s\n", msg);
 		if(!strncmp(msg, "ACTION=", 7)) {
 			msg += 7;
 			uevent->action = msg;
@@ -117,7 +117,7 @@ static void parse_event(const char *msg, struct uevent *uevent)
 		} else if(!strncmp(msg, "ALARM=", 6)) { //ALARM事件过滤此字段
 			msg += 6;
 			uevent->keyevent = msg;
-			printf("msg=%s\n", msg);
+			//printf("msg=%s\n", msg);
 		}
 
 		while(*msg++)
@@ -192,7 +192,14 @@ void handle_device_fd(int fd)
 */
 void uevent_register_client(struct usb_uevent *usb_evt)
 {
+#if 0
 	gusb_evt = usb_evt;	
+#endif
+	gusb_evt = (struct usb_uevent *)malloc(sizeof(*usb_evt));
+	gusb_evt->action = usb_evt->action;
+	gusb_evt->subsystem = usb_evt->subsystem;
+	gusb_evt->usb_mount_callback = usb_evt->usb_mount_callback;
+
 	dbgprint("---subsystem:%s action:%s\n", gusb_evt->subsystem, gusb_evt->action);
 }
 #endif
