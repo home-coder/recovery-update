@@ -13,6 +13,9 @@
 #include <linux/socket.h>
 #include <poll.h>
 
+#include "common.h"
+#include "usb.h"
+
 #define SCM_CREDENTIALS 0x02
 struct uevent {
 	const char *action;
@@ -24,11 +27,19 @@ struct uevent {
 	const char *keyevent;
 };
 
+#define DEBUG   1
+
+#if 0
 struct ucred {
 	__u32   pid;
 	__u32   uid;
 	__u32   gid;
 };
+#endif
+
+#ifndef LOCAL_SOCKET
+struct usb_uevent *gusb_evt = NULL;
+#endif
 
 static int open_uevent_socket(void)
 {
@@ -55,6 +66,22 @@ static int open_uevent_socket(void)
 	}
 
 	return s;
+}
+
+void process_event(struct uevent *uevent)
+{
+	if (!gusb_evt || !uevent) {
+		dbgprint("invalid event\n");	
+	} else {
+		if ( !strcmp(gusb_evt->subsystem, uevent->subsystem) ) {
+			if ( !strcmp(gusb_evt->action, uevent->action) ) {
+				dbgprint("hotplug event now, call mounting...\n");
+				gusb_evt->usb_mount_callback();
+			}
+		} else {
+			dbgprint("--------------------------------\n");
+		}
+	}
 }
 
 static void parse_event(const char *msg, struct uevent *uevent)
@@ -97,9 +124,15 @@ static void parse_event(const char *msg, struct uevent *uevent)
 			;
 	}
 
+#if DEBUG
 	printf("event { '%s', '%s', '%s', '%s', %d, %d }\n",
 			uevent->action, uevent->path, uevent->subsystem,
 			uevent->firmware, uevent->major, uevent->minor);
+#endif
+#ifndef LOCAL_SOCKET
+	process_event(uevent);
+#endif
+
 #endif
 }
 
@@ -153,14 +186,31 @@ void handle_device_fd(int fd)
 	}
 }
 
+#ifndef LOCAL_SOCKET
+/*
+参数，目前只满足U盘设备，不具备通用性
+*/
+void uevent_register_client(struct usb_uevent *usb_evt)
+{
+	gusb_evt = usb_evt;	
+}
+#endif
+
+#ifdef LOCAL_SOCKET
 int main(void)
+#else
+int uevent_demon_init()
+#endif
 {
 	int fd = 0;
 
+	dbgprint("uevent demon init...\n");
 	fd = open_uevent_socket();
 	if (fd < 0) {
 		printf("error!\n");
 		return -1;
 	}
 	handle_device_fd(fd);
+
+	return 0;
 }

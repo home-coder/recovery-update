@@ -9,7 +9,8 @@ QEMU_HARDWARE := true
 LOCAL_SRC_FILES += yang.c \
 				   usb.c  \
 				   blockutl.c \
-				   roots.c
+				   roots.c \
+				   uevent_demon.c
 
 LOCAL_STATIC_LIBRARIES += \
 		libfs_mgr \

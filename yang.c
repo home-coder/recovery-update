@@ -50,6 +50,7 @@ main(int arc, char **argv)
 	//第一次挂载
 	usb_mount();
 	//后期热插拔
+	uevent_demon_init();
 	usb_register_uevent();
 #endif
 

@@ -7,6 +7,13 @@
 extern "C" {
 #endif
 
+struct usb_uevent {
+	char *subsystem;
+	char *action;
+	char **usb_path;
+	int (*usb_mount_callback)();
+};
+
 //return 0 if exists
 int check_file_exists(const char *path);
 

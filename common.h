@@ -38,8 +38,9 @@ extern "C" {
 #define dbgprint(format,args...)
 #endif
 
-
+#ifndef PATH_MAX
 #define PATH_MAX   64
+#endif
 
 #if 0
 #define LOGV(...) fprintf(stdout, "V:" __VA_ARGS__)
