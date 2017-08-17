@@ -152,7 +152,7 @@ void handle_device_fd(int fd)
 		fds.fd = fd;
 		fds.events = POLLIN;
 		fds.revents = 0;
-		nr = poll(&fds, 1, -1); //非阻塞
+		nr = poll(&fds, 1, -1); 
 
 		if(nr > 0 && (fds.revents & POLLIN)) {
 			ssize_t n = recvmsg(fd, &hdr, 0);

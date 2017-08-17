@@ -1,4 +1,7 @@
-LOCAL_PATH:= $(call my-dir)
+LOCAL_PATH := $(my-dir)
+#这样编译有个错误，不知道怎么修改，只能一个目录一个目录手动的去编译吧
+#include $(call first-makefiles-under,$(LOCAL_PATH))
+
 include $(CLEAR_VARS)
 
 LOCAL_SHARED_LIBRARIES := libcutils liblog
