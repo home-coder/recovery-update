@@ -45,6 +45,12 @@ static const char *MISC_DEVICE = "/dev/block/by-name/misc";
 #define REQ_FLAG_VALUE 0x55
 #define ACTIVATE_FLAG_OFFSET_BYTES 0x100004 
 #define ACTIVATE_FLAG_VALUE 0xaa
+
+static const char *COMMAND_LINE = "console=ttyS0,115200 root=/dev/block/system init=/init loglevel=1 vmalloc=384M partitions=bootloader@nanda:env@nandb:boot@nandc:system\
+								   @nandd:misc@nande:recovery@nandf:sysrecovery@nandg:private@nandh:Reserve0@nandi:klog@nandj:Reserve1@nandk:Reserve2@nandl:cache@nandm:nandm@nandn:UDISK@nando \
+								   mac_addr= wifi_mac= bt_mac= specialstr= serialno= inside_model= business_model= launcher_channelid= fake_flash=2 boot_type=0 \
+								   disp_para=20b0000 init_disp=20b0404 tv_vdid=0 fb_base=0x46400000 config_size=49152";
+
 /*
  * android_name_to_id - returns the integer uid/gid associated with the given
  * name, or -1U on error.
